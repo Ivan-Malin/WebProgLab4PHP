@@ -1,13 +1,10 @@
 <?php
 include("db.php");
 
-$sql = "CREATE DATABASE IF NOT EXISTS apteka_db";
-
-if ($conn->query($sql) === TRUE) {
+try {
+    $sql = "CREATE DATABASE IF NOT EXISTS apteka_db";
+    $conn->query($sql);
     echo "База данных успешно создана.<br>";
-
-    // Используем созданную базу данных
-    $conn->select_db($database);
 
     // Выбираем созданную базу данных
     $conn->query("USE apteka_db");
@@ -39,16 +36,14 @@ if ($conn->query($sql) === TRUE) {
         FOREIGN KEY (client_id) REFERENCES clients(id)
     )";
 
-    if ($conn->query($medicinesTable) === TRUE &&
-        $conn->query($clientsTable) === TRUE &&
-        $conn->query($salesTable) === TRUE) {
-        echo "Таблицы успешно созданы.";
-    } else {
-        echo "Ошибка при создании таблиц: " . $conn->error;
-    }
-} else {
-    echo "Ошибка при создании базы данных: " . $conn->error;
-}
+    $conn->query($medicinesTable);
+    $conn->query($clientsTable);
+    $conn->query($salesTable);
 
-$conn->close();
+    echo "Таблицы успешно созданы.";
+} catch (PDOException $e) {
+    echo "Ошибка: " . $e->getMessage();
+} finally {
+    $conn = null;
+}
 ?>

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Аптека</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="container">
         <h1>Аптека: Учет лекарств</h1>
@@ -17,15 +19,16 @@
         <?php
         include("db.php");
 
-        // Fetch table names from the database
-        $showTablesSQL = "SHOW TABLES FROM apteka_db";
-        $result = $conn->query($showTablesSQL);
+        try {
+            // Fetch table names from the database
+            $showTablesSQL = "SHOW TABLES FROM apteka_db";
+            $result = $conn->query($showTablesSQL);
 
-        if ($result->num_rows > 0) {
+            // if ($result->rowCount() > 0) {
             echo "<form action='process.php' method='post'>";
             echo "<h3>Выберите таблицу:</h3>";
             echo "<select name='selected_table' id='tableSelect' onchange='fetchColumns()'>";
-            while ($row = $result->fetch_row()) {
+            while ($row = $result->fetch()) {
                 echo "<option value='{$row[0]}'>{$row[0]}</option>";
             }
             echo "</select>";
@@ -52,11 +55,11 @@
 
             echo "<button type='submit' name='submit_action'>Выполнить</button>";
             echo "</form>";
-        } else {
-            echo "No tables found in the database.";
+        } catch (PDOException $e) {
+            echo "Ошибка: " . $e->getMessage();
+        } finally {
+            $conn = null;
         }
-
-        $conn->close();
         ?>
 
         <script>
@@ -106,4 +109,5 @@
 
     </div>
 </body>
+
 </html>

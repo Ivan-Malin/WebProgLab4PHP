@@ -1,13 +1,19 @@
 <?php
 include("db.php");
 
-$sql = "DROP DATABASE IF EXISTS apteka_db";
-
-if ($conn->query($sql) === TRUE) {
+try {
+    $sql = "DROP DATABASE IF EXISTS apteka_db";
+    $conn->query($sql);
+    // if ($conn->query($sql) === TRUE) {
+    //     echo "База данных успешно удалена.";
+    // } else {
+    //     echo "Ошибка при удалении базы данных: ";
+    //     //  . $conn->getMessage();
+    // }
     echo "База данных успешно удалена.";
-} else {
-    echo "Ошибка при удалении базы данных: " . $conn->error;
+} catch (PDOException $e) {
+    echo "Ошибка: " . $e->getMessage();
+} finally {
+    $conn = null;
 }
-
-$conn->close();
 ?>
