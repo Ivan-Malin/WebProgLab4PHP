@@ -2,313 +2,251 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Интернет-магазин учебной литературы</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            padding: 1em;
-        }
-
-        main {
-            max-width: 800px;
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        input,
-        textarea,
-        select {
-            margin-bottom: 16px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            /* добавлено для учета padding и border в общей ширине элемента */
-        }
-
-        input[type="submit"] {
-            background-color: #333;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #555;
-        }
-
-        .cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-
-        .quantity-input {
-            width: 80px;
-            transition: width 0.3s;
-            /* Добавлено для плавного перехода при изменении ширины */
-        }
-
-        .quantity-input:valid {
-            width: 80px;
-        }
-
-        .quantity-input:invalid {
-            width: 0;
-        }
-
-        .result {
-            margin-top: 20px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 4px;
-        }
-
-        .total-cost {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Интернет-магазин учебной литературы</title>
+	<link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-    <header>
-        <h1>Книжный магазин учебной литературы</h1>
-    </header>
+	<header>
+		<h1>Книжный магазин учебной литературы</h1>
+	</header>
 
-    <main>
-        <h2>Заказ учебной литературы</h2>
+	<main>
+		<h2>Заказ учебной литературы</h2>
 
-        <!-- Форма заказа -->
-        <form action="" method="post" onsubmit="return validateForm()">
-            <label for="fullName">ФИО:</label>
-            <input type="text" id="fullName" name="fullName" required pattern="[A-Za-zА-Яа-яЁё\s]+" title="Только буквы и пробелы">
+		<!-- Форма заказа -->
+		<form action="" method="post" onsubmit="return validateForm()">
+		    <label for="fullName">ФИО:</label>
+		    <input type="text" id="fullName" name="fullName" required pattern="[A-Za-zА-Яа-яЁё\s]+" title="Только буквы и пробелы">
 
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
+		    <label for="email">Email:</label>
+		    <input type="email" id="email" name="email" required>
 
-            <label for="userId">UserId:</label>
-            <input type="text" name="userId">
+		    <h3>Выберите учебники:</h3>
+		    <div class="cards-container">
+				<?php
+				$servername = "host.docker.internal";
+				$username = "root";
+				$password = "test";
+				$dbname = "myDB";
 
-            <h3>Выберите учебники:</h3>
-            <div class="cards-container">
-                <?php
-                $host = "host.docker.internal"; // адрес сервера базы данных
-                $username = "root"; // имя пользователя
-                $password = "test"; // пароль (если есть)
-                $database = "myDb"; // название базы данных
+				try {
+				    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+				    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-                // Подключение к базе данных
-                $conn = new mysqli($host, $username, $password, $database);
+				    $sql = "SELECT id, name, author, speciality, price, quantity FROM Books";
+				    $stmt = $conn->query($sql);
 
-                // Проверка соединения
-                if ($conn->connect_error) {
-                    die("Connection failed: " . $conn->connect_error);
-                }
+				    if ($stmt->rowCount() > 0) {
+				        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+				            echo "<div class='card'>";
+				            echo "<h3>" . $row["name"] . "</h3>";
+				            echo "<p>Автор: " . $row["author"] . "</p>";
+				            echo "<p>Специальность: " . $row["speciality"] . "</p>";
+				            echo "<p>Цена: " . $row["price"] . "</p>";
+				            echo "<input type='number' name='quantity[" . $row["id"] . "]' value='0' min='0'>";
+				            echo "</div>";
+				        }
+				    } else {
+				        echo "0 results";
+				    }
+				} catch(PDOException $e) {
+				    echo "Error: " . $e->getMessage();
+				}
+				$conn = null;
+				?>
+		    </div>
 
-                // Получение информации о книгах из таблицы Books
-                $sql = "SELECT id, name, author, speciality, price FROM Books";
-                $result = $conn->query($sql);
+		    <label for="delivery">Доставка на дом:</label>
+		    <input type="checkbox" id="delivery" name="delivery">
 
-                if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        echo '<div class="card">';
-                        echo '<h4>' . $row["name"] . '</h4>';
-                        echo '<p><strong>Автор:</strong> ' . $row["author"] . '</p>';
-                        echo '<p><strong>Специальность:</strong> ' . $row["speciality"] . '</p>';
-                        echo '<p><strong>Цена:</strong> ' . $row["price"] . ' руб.</p>';
-                        echo '<label>';
-                        echo 'Количество: <input class="quantity-input" type="number" name="quantity[' . $row["id"] . ']" placeholder="Количество" min="0">';
-                        echo '</label>';
-                        echo '</div>';
-                    }
-                }
-                ?>
-            </div>
+		    <label for="to_file">Сохранить детали заказа в файл</label>
+		    <input type="checkbox" id="to_file" name="to_file">
 
-            <label for="delivery">Доставка на дом:</label>
-            <input type="checkbox" id="delivery" name="delivery">
+		    <label for="address">Адрес доставки</label>
+		    <input type="text" id="address" name="address">
 
-            <input type="submit" name="submitOrder" value="Оформить заказ">
-        </form>
+		    <input type="submit" name="submitOrder" value="Оформить заказ">
+		</form>
+		</div>
 
-        <!-- Результат обработки заказа -->
-        <div class="result">
-            <?php
-            if (isset($_POST['submitOrder'])) {
-                $fullName = $_POST["fullName"];
-                $email = $_POST["email"];
-                $userId = $_POST["userId"];
-                $delivery = isset($_POST["delivery"]) ? 1 : 0; // Проверка наличия доставки
+		<div class="total-cost" id="totalCost">
+			Итоговая стоимость: <span id="totalAmount">0</span> руб.
+		</div>
+	</main>
+			<?php
+			
+			if (isset($_POST['submitOrder'])) {
+			    $servername = "host.docker.internal";
+			    $username = "root";
+			    $password = "test";
+			    $dbname = "myDB";
 
-                // Общая стоимость заказа
-                $totalPrice = 0;
+			    try {
+			        $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+			        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-                // Блок для хранения информации о заказанных книгах
-                $orderedBooksInfo = "";
+			        $user_name = $_POST['fullName'];
+			        $email = $_POST['email'];
+			        $datetime = date('Y-m-d H:i:s');
+			        $on_home = isset($_POST['delivery']) ? 1 : 0;
+			        $address = isset($_POST['delivery']) ? $_POST['address'] : '';
 
-                foreach ($_POST["quantity"] as $bookId => $count) {
-                    if ($count > 0) {
-                        $sql = "SELECT id, name, author, speciality, price FROM Books WHERE id = '$bookId'";
-                        $result = $conn->query($sql);
+			        // Проверка существования пользователя
+			        $stmt = $conn->prepare("SELECT id FROM Person WHERE name=:user_name");
+			        $stmt->bindParam(':user_name', $user_name);
+			        $stmt->execute();
 
-                        if ($result->num_rows > 0) {
-                            $row = $result->fetch_assoc();
-                            $bookPrice = $row["price"];
+			        if ($stmt->rowCount() > 0) {
+			            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+			            $user_id = $row["id"];
+			            echo "User ID: " . $user_id;
+			        } else {
+			            $stmt = $conn->query("SELECT MAX(id) AS max_id FROM Person");
+			            $row_max_id = $stmt->fetch(PDO::FETCH_ASSOC);
+			            $new_id = $row_max_id["max_id"] + 1;
+			            $sql_insert_user = "INSERT INTO Person (id, name, email) VALUES (:new_id, :user_name, :email)";
+			            $stmt = $conn->prepare($sql_insert_user);
+			            $stmt->bindParam(':new_id', $new_id);
+			            $stmt->bindParam(':user_name', $user_name);
+			            $stmt->bindParam(':email', $email);
+			            if ($stmt->execute()) {
+			                //echo "New record created successfully. User ID: " . $new_id;
+			                $user_id = $new_id;
+			            } else {
+			                echo "Error creating user: " . $stmt->errorInfo();
+			            }
+			        }
 
-                            // Уменьшение цены на 10% при выборе доставки на дом
-                            if ($delivery) {
-                                $bookPrice *= 0.9;
-                            }
+			        foreach ($_POST['quantity'] as $book_id => $quantity) {
+			            if ($quantity != 0) {
+			                $stmt = $conn->prepare("SELECT id, price FROM Books WHERE id = :book_id");
+			                $stmt->bindParam(':book_id', $book_id);
+			                $stmt->execute();
+			                $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                            $totalPrice += $bookPrice * $count; // Обновление общей стоимости заказа
+			                if ($stmt->rowCount() > 0) {
+			                    $price = $row["price"];
+			                    if ($on_home) {
+			                        $price *= 0.9;
+			                    }
+			                    $stmt = $conn->prepare("INSERT INTO Orders (user_id, datetime, book_id, count, price, on_home, address) 
+			                        VALUES (:user_id, :datetime, :book_id, :quantity, :price, :on_home, :address)");
+			                    $stmt->bindParam(':user_id', $user_id);
+			                    $stmt->bindParam(':datetime', $datetime);
+			                    $stmt->bindParam(':book_id', $book_id);
+			                    $stmt->bindParam(':quantity', $quantity);
+			                    $stmt->bindParam(':price', $price);
+			                    $stmt->bindParam(':on_home', $on_home);
+			                    $stmt->bindParam(':address', $address);
+			                    if (!$stmt->execute()) {
+			                        echo "Error: " . $stmt->errorInfo();
+			                    }
+			                }
+			            }
+			        }
+			    } catch(PDOException $e) {
+			        echo "Connection failed: " . $e->getMessage();
+			    }
+			}
+		// Вывод на экран данных о заказе
+		try {
+		    $sql_order_details = "
+		        SELECT Books.author, Books.name as 'title', Books.speciality, Orders.count, Orders.price, Person.name AS 'person_name', Orders.address AS 'address_delivery'
+		        FROM Orders
+		        INNER JOIN Books ON Orders.book_id = Books.id
+		        INNER JOIN Person ON Orders.user_id = Person.id
+		        WHERE Orders.datetime = :datetime AND Orders.user_id = :user_id
+		    ";
 
-                            // Формирование информации о книгах в заказе
-                            $orderedBooksInfo .= $row["name"] . ' - ' . $row["author"] . ' - ' . $row["speciality"] . ' - ' . $bookPrice . ' руб. (количество: ' . $count . ')<br>';
-                        }
-                    }
-                }
+		    $stmt = $conn->prepare($sql_order_details);
+		    $stmt->bindParam(':datetime', $datetime);
+		    $stmt->bindParam(':user_id', $user_id);
+		    $stmt->execute();
 
-                // Вставка данных в таблицу Users, если пользователя нет
-                $userQuery = "INSERT IGNORE INTO Users (id, name, email) VALUES ($userId, '$fullName', '$email')";
-                $conn->query($userQuery);
+		    if ($stmt) {
+		        $order_details = "<h2 style='color: blue; font-size: 28px;'>Order Details</h2>";
+		        $total_amount = 0;
 
-                // Получение ID пользователя
-                $userIdQuery = "SELECT id FROM Users WHERE email = '$email'";
-                $userResult = $conn->query($userIdQuery);
+		        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+		            $subtotal = $row['count'] * $row['price'];
+		            $order_details .= "<p><strong style='color: green; font-size: 18px;'>Название:</strong> {$row['title']}</p>";
+		            $order_details .= "<p><strong>Автор:</strong> {$row['author']}</p>";
+		            $order_details .= "<p><strong>Специальность:</strong> {$row['speciality']}</p>";
+		            $order_details .= "<p><strong>Количество:</strong> {$row['count']}</p>";
+		            $order_details .= "<p><strong>Цена за один экземпляр:</strong> {$row['price']}</p>";
+		            $order_details .= "<p><strong>Цена за все экземпляры:</strong> $subtotal</p>";
+		            $total_amount += $subtotal;
+		            $person_name = $row['person_name'];
+		            $address_delivery = $row['address_delivery'];
+		        }
 
-                if ($userResult->num_rows > 0) {
-                    $userRow = $userResult->fetch_assoc();
-                    $userId = $userRow["id"];
+		        $order_details .= "<p><strong style='color: blue; font-size: 28px;'>Общая стоимость заказа:</strong> $total_amount</p>";
+		        $order_details .= "<p><strong style='color: blue; font-size: 28px;'>Имя заказчика:</strong> {$person_name}</p>";
+		        $order_details .= "<p><strong style='color: blue; font-size: 28px;'>Адрес доставки:</strong> {$address_delivery}</p>";
 
-                    // Вставка данных в таблицу Orders
-                    $insertOrderQuery = "INSERT INTO Orders (id_user, date, status, delivery) VALUES ('$userId', NOW(), 'В обработке', '$delivery')";
-                    $conn->query($insertOrderQuery);
-                    $orderId = $conn->insert_id; // Получение ID только что созданного заказа
+		        echo $order_details; 
 
-                    // Добавление информации о заказанных книгах в таблицу OrderDetails
-                    foreach ($_POST["quantity"] as $bookId => $count) {
-                        if ($count > 0) {
-                            $sql = "INSERT INTO OrderDetails (id_order, id_book, count) VALUES ('$orderId', '$bookId', '$count')";
-                            $conn->query($sql);
-                        }
-                    }
+		        if (isset($_POST['to_file'])) {
+		            // Выгрузка результат в файл
+		            $file_path = 'order_details_' . date('Y-m-d_H-i-s') . '.txt';
 
-                    // Вывод информации о заказе
-                    echo "<h3>Информация о заказе:</h3>";
-                    echo "<p><strong>ФИО:</strong> $fullName</p>";
-                    echo "<p><strong>Email:</strong> $email</p>";
-                    echo "<p><strong>Дата заказа:</strong> " . date("Y-m-d H:i:s") . "</p>";
-                    echo "<p><strong>Заказанные книги:</strong><br> $orderedBooksInfo</p>";
+		            $stmt->execute(); 
 
-                    // Итоговая стоимость с учетом доставки на дом
-                    $deliveryCost = $delivery ? $totalPrice * 0.1 : 0;
-                    $totalWithDelivery = $totalPrice + $deliveryCost;
-                    echo "<p><strong>Итоговая стоимость с учетом доставки на дом:</strong> $totalWithDelivery руб.</p>";
+		            $order_details = "Order Details\n\n";
+		            $total_amount = 0;
 
-                    echo "Заказ успешно оформлен!";
-                } else {
-                    echo "Ошибка при создании пользователя.";
-                }
-            }
-            ?>
-        </div>
+		            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+		                $subtotal = $row['count'] * $row['price'];
+		                $order_details .= "Название: {$row['title']}\n";
+		                $order_details .= "Автор: {$row['author']}\n";
+		                $order_details .= "Специальность: {$row['speciality']}\n";
+		                $order_details .= "Количество: {$row['count']}\n";
+		                $order_details .= "Цена за один экземпляр: {$row['price']}\n";
+		                $order_details .= "Цена за все экземпляры: $subtotal\n";
+		                $total_amount += $subtotal;
+		                $person_name = $row['person_name'];
+		                $address_delivery = $row['address_delivery'];
+		            }
 
-        <div class="total-cost" id="totalCost">
-            Итоговая стоимость: <span id="totalAmount">0</span> руб.
-        </div>
-    </main>
+		            $order_details .= "Общая стоимость заказа: $total_amount\n";
+		            $order_details .= "Имя заказчика: $person_name\n";
+		            $order_details .= "Адрес доставки: $address_delivery\n";
 
-    <script>
-        function validateForm() {
-            var fullName = document.getElementById("fullName").value;
-            var email = document.getElementById("email").value;
+		            // Сохранение в файл
+		            file_put_contents($file_path, $order_details);
 
-            // Простая проверка на наличие букв в имени
-            if (!/^[A-Za-zА-Яа-яЁё\s]+$/.test(fullName)) {
-                alert("Пожалуйста, введите корректное ФИО (только буквы и пробелы).");
-                return false;
-            }
+		            $conn = null; // Закрытие соединения с базой
+		        }
+		    }
+		} catch (PDOException $e) {
+		    echo "Error: " . $e->getMessage();
+		}
+		?>
 
-            // HTML5 встроенная проверка email
-            if (!document.getElementById("email").checkValidity()) {
-                alert("Пожалуйста, введите корректный email.");
-                return false;
-            }
+	<script>
+		function validateForm() {
+			var fullName = document.getElementById("fullName").value;
+			var email = document.getElementById("email").value;
 
-            return true;
-        }
-    </script>
-    <script>
-        // Обновление блока "Итоговая стоимость" при изменении количества товаров
-        function updateTotalCost() {
-            var totalAmount = 0;
-            var quantityInputs = document.querySelectorAll('.quantity-input');
+			// Простая проверка на наличие букв в имени
+			if (!/^[A-Za-zА-Яа-яЁё\s]+$/.test(fullName)) {
+				alert("Пожалуйста, введите корректное ФИО (только буквы и пробелы).");
+				return false;
+			}
 
-            quantityInputs.forEach(function(input) {
-                var card = input.closest('.card');
-                var priceElement = card.querySelector('p strong:last-child');
-                // input.value
-                document.getElementById('totalAmount').textContent = card.textContent.match('[a-z][a-z0-9]*')+'..';
-                // Используем регулярное выражение для извлечения числа из текста
-                var priceMatch = priceElement.textContent.match('/(\d+(\.\d+)?) руб\./');
-                var price = priceMatch ? parseFloat(priceMatch[1]) : 0;
-                var count = parseInt(input.value) || 0;
-                totalAmount += price * count;
-            });
+			// HTML5 встроенная проверка email
+			if (!document.getElementById("email").checkValidity()) {
+				alert("Пожалуйста, введите корректный email.");
+				return false;
+			}
 
-            var deliveryCheckbox = document.getElementById('delivery');
-            var deliveryCost = deliveryCheckbox.checked ? totalAmount * 0.1 : 0;
-            var totalWithDelivery = totalAmount + deliveryCost;
-
-            document.getElementById('totalAmount').textContent += totalWithDelivery.toFixed(2);
-        }
-
-
-        // Добавление обработчика событий к каждому input
-        var quantityInputs = document.querySelectorAll('.quantity-input');
-        quantityInputs.forEach(function(input) {
-            input.addEventListener('input', updateTotalCost);
-        });
-    </script>
-
+			return true;
+		}
+	</script>
 </body>
 
 </html>
