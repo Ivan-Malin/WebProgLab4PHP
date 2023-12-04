@@ -27,8 +27,12 @@ try {
                 unset($_POST["action"]);
                 unset($_POST["condition"]);
                 unset($_POST["submit_action"]);
+                // $setClause = implode(", ", array_map(function ($key, $value) {
+                //     return "$key = $value";
+                // }, array_keys($_POST), array_values($_POST)));
+                // $sql = "UPDATE $selectedTable SET $setClause WHERE $condition";
                 $setClause = implode(", ", array_map(function ($key, $value) {
-                    return "$key = :$key";
+                    return "$key = '$value'";
                 }, array_keys($_POST), array_values($_POST)));
                 $sql = "UPDATE $selectedTable SET $setClause WHERE $condition";
                 break;
@@ -86,6 +90,7 @@ try {
 
         if ($selectedAction !== 'sort' && $selectedAction !== 'read') {
             // Execute the SQL query for add, edit, or delete actions
+            // echo $sql;
             $stmt = $conn->prepare($sql);
             if ($stmt->execute()) {
                 echo "Operation delivered successfully.";

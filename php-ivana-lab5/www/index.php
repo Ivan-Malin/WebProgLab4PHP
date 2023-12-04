@@ -50,11 +50,11 @@
 
             // Additional input fields for conditions
             echo "<div id='conditionFields'></div>";
-
             echo "</div>";
 
             echo "<button type='submit' name='submit_action'>Выполнить</button>";
             echo "</form>";
+            echo "<div id='conditionFields2'></div>";
         } catch (PDOException $e) {
             echo "Ошибка: " . $e->getMessage();
         } finally {
@@ -84,9 +84,13 @@
             function handleAction() {
                 var selectedAction = document.getElementById('actionSelect').value;
                 var conditionFields = document.getElementById('conditionFields');
+                var conditionFields2 = document.getElementById('conditionFields2');
 
+                
                 // Clear previous condition fields
                 conditionFields.innerHTML = "";
+                conditionFields2.innerHTML = "";
+                // conditionFields2.innerHTML = "";
 
                 if (selectedAction === 'edit' || selectedAction === 'sort' || selectedAction === 'read' || selectedAction === 'delete') {
                     // Additional input fields for conditions
@@ -94,17 +98,78 @@
                     conditionLabel.setAttribute('for', 'condition');
                     conditionLabel.textContent = 'Условие:';
                     conditionFields.appendChild(conditionLabel);
-
+                    
+                    
                     var conditionInput = document.createElement('input');
                     conditionInput.setAttribute('type', 'text');
                     conditionInput.setAttribute('name', 'condition');
                     conditionInput.setAttribute('id', 'condition');
                     conditionFields.appendChild(conditionInput);
+                    conditionFields.appendChild(document.createElement('br'));
+                }
+                if (selectedAction === 'edit') {
+                    conditionFields2.appendChild(document.createElement('br'));
+                    var conditionLabel2 = document.createElement('label');
+                    conditionLabel2.setAttribute('for', 'condition2');
+                    conditionLabel2.textContent = 'Поле для получения данных искомой изменяемой строки:';
+                    conditionFields2.appendChild(conditionLabel2);
+                    var conditionInput2 = document.createElement('input');
+                    // conditionInput2.disabled = "disabled";
+                    conditionInput2.setAttribute('type', 'text');
+                    // conditionInput2.setAttribute('name', 'condition2');
+                    conditionInput2.setAttribute('id', 'condition2');
+                    conditionFields2.appendChild(conditionInput2);
+                    
+                    // Create the button element
+                    var button = document.createElement("div");
+                    // button.setAttribute("content","Click Me");
+                    button.innerHTML = "Получить данные";
+                    // button.setAttribute("onclick", "fetch_row()");
+                    button.style.cursor = "pointer";  // Change the cursor to indicate clickability
+                    button.addEventListener("click", fetch_row);
+                    conditionInput2.addEventListener("keydown", function(event) {
+                        if (event.key === "Enter") {
+                            fetch_row();
+                        }
+                    });
 
-                    var breakElement = document.createElement('br');
-                    conditionFields.appendChild(breakElement);
+                    // Add an event listener to call fetch_row() function on click
+                    // button.addEventListener("click", fetch_row);
+
+                    // Append the button to the conditionFields2 element
+                    conditionFields2.appendChild(button);
+                    conditionFields2.appendChild(document.createElement('br'));
+                    conditionFields2.appendChild(document.createElement('br'));
+
                 }
             }
+
+            function fetch_row() {
+                var selectedTable = document.getElementById('tableSelect').value;
+                var condition = document.getElementById('condition2').value;
+                var xhr = new XMLHttpRequest();
+
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        console.log(xhr.responseText);
+                        console.log(condition);
+                        var rowData = JSON.parse(xhr.responseText)[0];
+                        // Do something with the rowData to edit columns
+                        // For example, populate the input fields with the rowData
+                        for (var key in rowData) {
+                            console.log(key);
+                            console.log(rowData);
+                            if (rowData.hasOwnProperty(key)) {
+                                document.getElementById(key).value = rowData[key];
+                            }
+                        }
+                    }
+                };
+
+                xhr.open('GET', 'preread.php?table=' + selectedTable + '&condition=' + condition, true);
+                xhr.send();
+            }
+
         </script>
 
     </div>

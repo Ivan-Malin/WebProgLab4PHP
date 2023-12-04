@@ -2,7 +2,7 @@
 $host = "host.docker.internal"; // адрес сервера базы данных
 $username = "root"; // имя пользователя
 $password = "test"; // пароль (если есть)
-$database = "myDb"; // название базы данных
+$database = "apteka_db"; // название базы данных
 
 // Подключение к базе данных
 $conn = new PDO("mysql:host=$host;dbname=$database", $username, $password);
